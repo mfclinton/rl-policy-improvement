@@ -2,48 +2,42 @@ import numpy as np
 import torch
 from scipy import stats
 
+# T IS INCLUSIVE, TODO double check
+def VectorizedImportantWeight(traj, cur_policy, new_policy):
+    is_weight_vec = new_policy[traj["St"],traj["At"]] / cur_policy[traj["St"],traj["At"]]
+    return is_weight_vec
+
 # Importance Sampling Methods
-def ImportanceSampling(histories, cur_policy, gamma, ep_num, new_policy):
-    traj = histories[ep_num]
-    is_weight = 1
-    disc_return = 0
-    for j in range(traj.shape[0]):
-        St, At, Rt, _ = traj[j]
-        St = int(St)
-        At = int(At)
-        is_weight *= new_policy[St, At] / cur_policy[St, At]
-        disc_return += (gamma ** j) * Rt
+def ImportanceSampling(traj, cur_policy, gamma, new_policy):
+    is_weight = np.prod(VectorizedImportantWeight(traj, cur_policy, new_policy))
+    disc_return = traj["return"]
     return is_weight * disc_return
 
-def PDImportanceSampling(histories, cur_policy, gamma, ep_num, new_policy):
-    traj = histories[ep_num]
-    
+# TODO double check
+def PDImportanceSampling(traj, cur_policy, gamma, new_policy):
     result = 0
-    for t in range(traj.shape[0]):
-        _, _, Rt, _ = traj[t]
-        is_weight = 1
-        for j in range(t + 1):
-            St, At, _, _ = traj[j]
-            St = int(St)
-            At = int(At)
-            is_weight *= new_policy[St, At] / cur_policy[St, At]
+    is_weight_vec = VectorizedImportantWeight(traj, cur_policy, new_policy)
+    is_weight = 1
+    for t in range(traj["St"].shape[0]):
+        Rt = traj["Rt"][t]
+        is_weight *= is_weight_vec[t]
         result += (gamma ** t) * is_weight * Rt
     return result
 
 def CalcAvgIS(histories, cur_policy, gamma, new_policy, ISFunc):
     total = 0
-    print("Averaging Importance Sampling")
-    update_freq = int(0.25 * len(histories))
+    # print("Averaging Importance Sampling")
+    # update_freq = int(0.25 * len(histories))
     for ep in range(len(histories)):
-        if(ep % update_freq == 0):
-            print(str(ep) + " / " + str(len(histories)))
-        total += ISFunc(histories, cur_policy, gamma, ep, new_policy)
+        # if(ep % update_freq == 0):
+        #     print(str(ep) + " / " + str(len(histories)))
+        total += ISFunc(histories[ep], cur_policy, gamma, new_policy)
     return total / len(histories)
 
 def CalcStdDev(histories, cur_policy, gamma, new_policy, ISFunc, avgIS):
     total = 0
     for ep in range(len(histories)):
-        total += (ISFunc(histories, cur_policy, gamma, ep, new_policy) - avgIS)**2
+        total += (ISFunc(histories[ep], cur_policy, gamma, new_policy) - avgIS)**2
     
     return np.sqrt((1 / (len(histories) - 1)) * total)
 

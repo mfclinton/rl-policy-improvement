@@ -3,13 +3,19 @@ import torch
 from scipy import stats
 
 # Gets histories from the CSV
-def GetHistories(path):
-    num_episodes = -1 #not used
+def GetHistories(path, gamma):
     histories = []
     with open(path) as file:
+        update_interval = 1000000
+        num_episodes = -1 #not used
         cur_episode = -1
         cur_timestep = -1
+        column_key = ["St", "At", "Rt", "pib"]
+        column_types = [int,int,float,float]
+        cur_return = None
         for idx, line in enumerate(file):
+            if(idx % update_interval == 0):
+                print("line " + str(idx))
             #not used
             if(idx == 0):
                 num_episodes = int(line)
@@ -17,23 +23,39 @@ def GetHistories(path):
             
             data = line.split(",")
             if(len(data) == 1):
+                if cur_return != None:
+                    histories[cur_episode]["return"] = cur_return
+                cur_return = 0
+
                 num_time_steps = int(line)
                 cur_episode += 1
                 cur_timestep = 0
 
-                traj = torch.zeros((num_time_steps, 4))
-                if torch.cuda.is_available():
-                    traj = traj.cuda()
+                traj = {}
+                for key_idx, key in enumerate(column_key):
+                    entries = None
+                    #NOTE CONVERSION
+                    if(key_idx == 0 or key_idx == 1):
+                        entries = np.zeros((num_time_steps), dtype=int)
+                    else:
+                        entries = np.zeros((num_time_steps), dtype=float)
 
-                histories.append(np.zeros((num_time_steps, 4)))
+                    traj[key] = entries
+
+                histories.append(traj)
                 continue
-                
-            St, At, Rt, pib = data
-            histories[cur_episode][cur_timestep, 0] = int(St)
-            histories[cur_episode][cur_timestep, 1] = int(At)
-            histories[cur_episode][cur_timestep, 2] = float(Rt)
-            histories[cur_episode][cur_timestep, 3] = float(pib)         
+
+            for e_idx, element in enumerate(data):
+                value = column_types[e_idx](element)
+                if(e_idx == 2):
+                    #reward
+                    cur_return += value * (gamma ** cur_timestep)
+
+                histories[cur_episode][column_key[e_idx]][cur_timestep] = value
+     
             cur_timestep += 1
+        #edge case last
+        histories[cur_episode]["return"] = cur_return
     return histories
 
 # Extracts as much policy info as possible from episode
@@ -43,11 +65,11 @@ def GetPolicyFromEpisode(histories, ep_num, num_states, num_actions):
     
     for state in range(num_states):
         for action in range(num_actions):
-            valid_idx = np.logical_and(traj[:,0] == state, traj[:,1] == action)
+            valid_idx = np.logical_and(traj["St"] == state, traj["At"] == action)
             if(not valid_idx.any()):
                 continue
             
-            policy[state, action] = traj[valid_idx][0,3]
+            policy[state, action] = traj["pib"][valid_idx][0]
             
     return policy
 
