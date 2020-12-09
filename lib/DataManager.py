@@ -59,6 +59,35 @@ def GetHistories(path, gamma):
         histories[cur_episode]["return"] = cur_return
     return histories
 
+def SplitData(histories):
+    split_idx = int(len(histories) * .8)
+    train = histories[:split_idx]
+    test = histories[split_idx:]
+    print(len(train))
+    print(len(test))
+    return train, test
+
+def GetAverageReturn(histories):
+    avg_exploratory_J = 0
+    for traj in histories:
+        avg_exploratory_J += traj["return"]
+        
+    avg_exploratory_J /= len(histories)
+    print("Average Baseline Return : " + str(avg_exploratory_J))
+    return avg_exploratory_J
+
+def GetTargetPerformance(USE_GRIDWORLD, avg_exploratory_J, percent_increase):
+    target_performance = 1.41537
+    if(USE_GRIDWORLD):
+        target_performance = avg_exploratory_J
+        
+    target_performance += abs(target_performance)*percent_increase #% increase
+    print("Target Performance : " + str(target_performance))
+    return target_performance
+
+
+#-----Policy Stuff----
+
 # Extracts as much policy info as possible from episode
 def GetPolicyFromEpisode(histories, ep_num, num_states, num_actions):
     policy = np.zeros((num_states, num_actions))

@@ -1,12 +1,12 @@
 import numpy as np
 
 class Gridworld():
-    def __init__(self, num_eps):
+    def __init__(self, GAMMA, num_eps):
         self.MAX_EPS = num_eps
         self.MAX_TIME_STEPS = 100
         self.STATE_DIM = 23
         self.NUM_ACTIONS = 4
-        self.GAMMA = .95
+        self.GAMMA = GAMMA
         self.NewEpisode()
         
     
@@ -17,7 +17,7 @@ class Gridworld():
         self.TAS = False
         
     def GetState(self):
-        result = np.zeros(self.STATE_DIM)
+        state = 0
         
         if(not self.TAS):
             state = self.y * 5 + self.x
@@ -26,9 +26,8 @@ class Gridworld():
                 state -= 1
             if (state > 16):
                 state -= 1
-            result[state] = 1
             
-        return result
+        return state
     
     def Transition(self, a):
         self.t += 1
@@ -84,8 +83,8 @@ def ExecutePolicy(policy, state):
     assert False #Error
     return -1, -1
 
-def RunGridworld(policy, num_eps = 100000):
-    gridworld = Gridworld(num_eps)
+def RunGridworld(policy, GAMMA=0.95, num_eps = 100000):
+    gridworld = Gridworld(GAMMA, num_eps)
 
     update_freq = gridworld.MAX_EPS * 0.1
     output = str(gridworld.MAX_EPS) + "\n"
@@ -95,12 +94,29 @@ def RunGridworld(policy, num_eps = 100000):
         gridworld.NewEpisode()
         traj_output = ""
         while not gridworld.TAS:
-            state = np.where(gridworld.GetState() != 0)[0][0]
+            state = gridworld.GetState()
             action, pi_s_a = ExecutePolicy(policy, state)
             reward = gridworld.Transition(action)
             traj_output += str(state) + "," + str(action) + "," + str(reward) + "," + str(pi_s_a) + "\n"
         output += str(gridworld.t) + "\n" + traj_output
 
     return output
-    # with open("gridworld_data.csv", "w") as f:
-    #     f.write(output)
+
+def GetGridworldReturn(policy, GAMMA=0.95, num_eps = 100000):
+    avg_return = 0
+    gridworld = Gridworld(GAMMA, num_eps)
+    for ep in range(gridworld.MAX_EPS):
+        gridworld.NewEpisode()
+        cur_return = 0
+        cur_gamma = 1
+        while not gridworld.TAS:
+            state = gridworld.GetState()
+            action, pi_s_a = ExecutePolicy(policy, state)
+            reward = gridworld.Transition(action)
+
+            cur_return += reward * cur_gamma
+            cur_gamma *= GAMMA
+        avg_return += cur_return
+
+    avg_return /= gridworld.MAX_EPS
+    return avg_return
