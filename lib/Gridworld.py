@@ -71,7 +71,7 @@ class Gridworld():
             reward = -10
         elif((self.x == 4) and (self.y == 4)):
             reward = 10
-        return reward * (self.GAMMA ** (self.t - 1))
+        return reward #* (self.GAMMA ** (self.t - 1))
 
 def ExecutePolicy(policy, state):
     temp = np.random.random_sample()
