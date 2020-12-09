@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from scipy import stats
+import os
 
 # Gets histories from the CSV
 def GetHistories(path, gamma):
@@ -85,4 +86,12 @@ def GetPolicy(histories, num_states, num_actions, num_iterartions):
                 if((cur_policy[state, action] == 0) and (temp_p[state, action] != 0)):
                     cur_policy[state, action] = temp_p[state, action]
     return cur_policy
-        
+
+def SavePolicy(new_policy, J_safety_lower_bound, delta, USE_GRIDWORLD):
+    folder_name = "policies\\delta_" + str(delta) + "\\"
+    if(USE_GRIDWORLD):
+        folder_name = "policies\\gw\\delta_" + str(delta) + "\\"
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    np.save(folder_name + "safety_" + str(J_safety_lower_bound), new_policy)
