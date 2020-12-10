@@ -116,11 +116,27 @@ def GetPolicy(histories, num_states, num_actions, num_iterartions):
                     cur_policy[state, action] = temp_p[state, action]
     return cur_policy
 
-def SavePolicy(new_policy, J_safety_lower_bound, delta, USE_GRIDWORLD):
-    folder_name = "policies\\delta_" + str(delta) + "\\"
+def SaveNumpyPolicy(new_policy, id, delta, USE_GRIDWORLD):
+    folder_name = "policies\\van\\delta_" + str(delta) + "\\"
     if(USE_GRIDWORLD):
         folder_name = "policies\\gw\\delta_" + str(delta) + "\\"
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
-    np.save(folder_name + "safety_" + str(J_safety_lower_bound), new_policy)
+    np.save(folder_name + "policy" + str(id), new_policy)
+
+def WriteSolutionToTxt(path, solution):
+    result_str = ""
+    for value in solution.reshape(-1):
+        result_str += str(value) + "\n"
+    result_str = result_str[:-1] #removes last new line
+    with open(path, "w") as f:
+        f.write(result_str)
+
+def LoadSolutionFromTxt(path, num_states, num_actions):
+    loaded_solution = np.zeros(num_states * num_actions)
+    with open(path, "r") as f:
+        for i, line in enumerate(f):
+            loaded_solution[i] = float(line)
+    loaded_solution = loaded_solution.reshape(num_states, num_actions)
+    return loaded_solution
