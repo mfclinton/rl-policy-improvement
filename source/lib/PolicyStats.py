@@ -24,6 +24,7 @@ def PDImportanceSampling(traj, cur_policy, gamma, new_policy):
         result += (gamma ** t) * is_weight * Rt
     return result
 
+#calculates the average importance samples over all trajectories
 def CalcAvgIS(histories, cur_policy, gamma, new_policy, ISFunc):
     total = 0
     # print("Averaging Importance Sampling")
@@ -41,6 +42,7 @@ def CalcStdDev(histories, cur_policy, gamma, new_policy, ISFunc, avgIS):
     
     return np.sqrt((1 / (len(histories) - 1)) * total)
 
+#Predicts a lowerbound with candidate data
 def Safety_Prediction(histories, cur_policy, gamma, new_policy, ISFunc, delta, num_safety, avgIS = None):
     t_value = stats.t.ppf(1-delta, num_safety - 1)
     if(avgIS == None):
@@ -49,6 +51,7 @@ def Safety_Prediction(histories, cur_policy, gamma, new_policy, ISFunc, delta, n
     
     return avgIS - 2 * (std_dev / np.sqrt(num_safety)) * t_value
 
+#predicts a lower bound with safety data
 def Safety_Test(histories, cur_policy, gamma, new_policy, ISFunc, delta):
     num_safety = len(histories)
     t_value = stats.t.ppf(1-delta, num_safety - 1)

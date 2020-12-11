@@ -1,7 +1,7 @@
 #Used to reformat policies to corecting numbering schema
 import os
-directory = r"text_policies/PDIS_1/"
-id = 51
+directory = r"text_policies/pdis_2/"
+id = 81
 for filename in os.listdir(directory):
     shared_name = "policy"
     idx = filename.find(shared_name)

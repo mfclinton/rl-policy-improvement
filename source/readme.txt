@@ -24,11 +24,21 @@ Directions To Generate Policies
 4. In the 2nd cell, labeled with "SET PARAMS" set the parameters according to the guide below.
 	- USE_GRIDWORLD : If set to True it, policies are generated for the cs687 Gridworld. Otherwise, policies are generated for the project world.
 	- USE_PDIS : If set to True we use Per Decision Importance Sampling for our policy improvement. Otherwise we use regular Importance Sampling.
+		- Set to True for pdis_0.pkl, note below that it doesn't matter what this is for other pkls
+	- USE_BOTH_PDIS : If True it takes policies that pass both PDIS and IS bounds
+		- Set to True for all but pdis_0.pkl
 	- percent_increase : The percentage we want to achieve over target performance. See /lib/DataManager.GetTargetPerformance for information about what our target performance is.
 	- num_policies : Number of policies to generate
+		- 40 for is_0
+		- 40 for is_1, followed by es.ask(), followed by 10 more iterations (using 50 should yield sufficiently equal results)
+		- 20 for each pdis
 	- es_path : Path of the saved CMA-ES object (/pickles/ Gridworld or Vanilla *from given data*) that we load in and generate policies with (see Generating CMA-ES Object for more detail)
 	- gamma : The gamma value used for our environment
 	- delta : confidence threshold
+	- random.seed() : *not the seed for the cma-es objects, see notes for that* For synthesizing policies, I used seeds 508 (is_1.pkl), 1337 (is_0.pkl), 88885555 (pdis_1.pkl), 877496444 (pdis_0.pkl), 3125832 (pdis_2.pkl)
+		- Note: CMA-ES objects are perma-seeded since they're saved to a file, the above seed is just for numpy and other random stuff.
+		- NOTE: to get the seed use for generating the cma-es objects, load them in and check their ".opts" for the ".seed" parameter and pass in {"seed":seedhere} as a 3rd parameter to the cma.CMAEvolutionStrategy object located in Evaluation Jupyter notebook in the cell containing the function "inv_barrier_constrained_explore"
+			for convenience, the seeds are 768362 (is_1.pkl), 552873 (is_0.pkl), 493998 (pdis_1.pkl), 595346 (pdis_0.pkl), 698993 (pdis_2.pkl)
 5. Run the notebook. Note: that each policy is cross checked with Mockworld and the IS/PDIS bound and tossed out if it doesn't meet the specifications. If you want policies fast without precautions then comment out those lines in the generation loop.
 
 
@@ -41,17 +51,20 @@ Generating CMA-ES Object *see NOTE below for more info*
 	- percent_increase : *see above*
 	- gamma : *see above*
 	- delta : *see above*
+	- seed : seed to use for the CMA-ES agent
+		- see seed note above in section 4 for seeds for CMA-ES and seeds for Numpy
 
 
 
 NOTE : Pretrained CMA-ES objects are available in /pickles/. but if you want to train your own follow the Generating CMA-ES Object guide.
 
-CMA-ES Objects Used : "pickles\van\saved-cma-van-is-80.pkl" for 50% of policies, "pickles\van\saved-cma-PDIS-20.pkl" for 50% of policies
+CMA-ES Objects Used in Synthesis notebook (located in pickles directory) : (is_1.pkl for 20%), (is_0.pkl for 20%), (pdis_1.pkl for 20%), (pdis_0.pkl for 20%), (pdis_2.pkl for 20%)
 Parameters Used For Policy Generation
-- for CMA-ES = "pickles\van\saved-cma-van-is-80.pkl" set USE_PDIS to FALSE
-= for CMA-ES = "pickles\van\saved-cma-PDIS-20.pkl" set USE_PDIS to TRUE
+- for CMA-ES = if "is" in the CMA-ES name set USE_PDIS to FALSE, else if "pdis" in CMA-ES name set USE_PDIS to TRUE
+- set USE_BOTH_PDIS True for all CMA-ES objects except pdis_0.pkl
 - percent_increase = 0.1
-- num_policies = 50 for each CMA-ES object
+- title offset = arbitrary, I used the order listed in the header of this section (is_1, is_0, pdis_1, ...)
+- num_policies = 20 for each CMA-ES object
 - es_path = path to respective CMA-ES object above
 - gamma = 0.95
 - delta = 0.01
