@@ -1,1 +1,0 @@
-I thought it would be useful to store the results of policy synthesis for references to seed, parameters, and outcome

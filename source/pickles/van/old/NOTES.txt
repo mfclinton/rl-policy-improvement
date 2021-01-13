@@ -1,3 +1,0 @@
-is_1 = 20 iterations
-is_0 = 80 iterations
-all pdis = 20 iterations except pdis_2 = 10
