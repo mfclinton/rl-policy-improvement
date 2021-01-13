@@ -1,8 +1,11 @@
+**Description**
+This project performs high confidence off-policy improvement. Meaning that from the results of running another policy, the code produces a new policy that will perform better than the existing policy with high confidence.
+
 This project is written entirely in Python
 The code is located within the JupyterNotebooks (*.ipynb files) and the /lib/ directory
 
 
-Required Python Libraries
+**Required Python Libraries**
 - numpy
 - torch (only necessary for old version)
 - scipy
@@ -16,7 +19,7 @@ pip install any of the above libraries if you don't already have it.
 
 
 
-Directions To Generate Policies
+**Directions To Generate Policies**
 0. Download the data.csv (from project pdf) and place it in the "data" folder. (if you want to use the 687 Gridworld or Mockworld, use their respective Jupyter Notebooks to generate the data)
 1. Install the above libraries
 2. Launch JupyterNotebook (cmd -> jupyter notebook)
@@ -73,7 +76,7 @@ Parameters Used For Policy Generation
 
 
 
-~~~ Directory Info ~~~
+**~~~ Directory Info ~~~**
 Note : If a directory listed here (like outcmaes) is not included in the submitted zip, then it exists in my actual development environment but was excluded from the submission (likely because I deemed it irrelevant or taking up too much space).
 
 -- Directory Explanation --
