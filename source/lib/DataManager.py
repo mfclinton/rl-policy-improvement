@@ -65,8 +65,8 @@ def GetHistories(path, gamma):
     return histories
 
 #splits data consistently
-def SplitData(histories):
-    split_idx = int(len(histories) * 0.8)
+def SplitData(histories, p=0.8):
+    split_idx = int(len(histories) * p)
     train = histories[:split_idx]
     test = histories[split_idx:]
     print(len(train))
